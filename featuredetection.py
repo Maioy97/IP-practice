@@ -16,8 +16,8 @@ def detectAndDisplay(frame):
                      (bounding_box[0]+bounding_box[2], bounding_box[1] + bounding_box[3]),
                      (0,155,255),  2)
 
-        cv2.circle(image,(keypoints['left_eye']), 2, (0,155,255), 2)
-        cv2.circle(image,(keypoints['right_eye']), 2, (0,155,255), 2)
+        cv2.circle(frame,(keypoints['left_eye']), 2, (0,155,255), 2)
+        cv2.circle(frame,(keypoints['right_eye']), 2, (0,155,255), 2)
             # for each box draw a rectangle in the original image 
     cv2.imshow('Capture - Face detection', frame)
 
