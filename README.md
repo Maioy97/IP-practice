@@ -1,7 +1,6 @@
 # IP-practice
 a few image processing functions redone for practice
 
-cascade document : https://docs.opencv.org/3.4/db/d28/tutorial_cascade_classifier.html
+to use the face detection script run in console in an enviroment that has opencv and mtcnn installed
+follow the MTCNN installation in : https://github.com/ipazc/mtcnn/
 
-alternate for the facial feature detection :
-    installing dlib : https://www.pyimagesearch.com/2017/03/27/how-to-install-dlib/
