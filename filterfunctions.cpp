@@ -139,26 +139,23 @@ Mat sobel_filter(Mat image){
 
 Mat orange_filter(int img_width,int img_height, Mat image){
 	 
-	Mat result;
+	
 	for (int x = 0; x<img_width;x++){
-        for(int y =0 ;y<img_height;y++)
-        {	// orange has a range of 255, >50 , _
-			Vec3b intensity = image.at<Vec3b>(y, x);
+        for(int y =0 ;y<img_height;y++){
+			// orange has a range of 255, >50 , _
+			Vec3b & intensity = image.at<Vec3b>(y, x);
 			float blue = intensity.val[0];
 			float green = intensity.val[1];
 			float red = intensity.val[2];
 			
-			if (red == 255 && green >= 50)
-			{
-				intensity.val[0]=0;
-				intensity.val[1]=0;
-				intensity.val[2]=0;
-				//move those to the mat result 
-				result.at<Vec3b>(y, x) = intensity;
+			if (red == 255 && green >= 50 && green < 200 && blue < 100)	{
+				intensity[0] = 0;
+				intensity[1] = 0;
+				intensity[2] = 0;
 			}
         }
     } 
-	 return result;
+	 return image;
 }
 
 int main (){
@@ -167,7 +164,7 @@ int main (){
   Mat image;
   string image_names[] = { "image-2","test","test2" , "test3" };
   string default_path = "D:\\Redirected Profile\\Documents\\projects\\git\\IPvisualstudio\\";
-  cout<<"pick an operation:1 sobel filter, 2 orange color filter";
+  cout<<"pick an operation:1 sobel filter, 2 sobel colored,3  orange color filter";
   cin>>choice_fltr;
   cout<<"enter image number :" ;
   cin >> choice_img;
