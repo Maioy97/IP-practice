@@ -12,12 +12,12 @@ using namespace cv;
 // orange color filter function 
 
 //extracts a 3*3 window from the image 
-void fill_window(int** window,int pixelx,int pixely,Mat image,int channel){
+void fill_window(int** window,int pixelx,int pixely,Mat image){
 
 	int img_width = image.cols;
 	int img_height = image.rows;
 	int temp;
-	//cout << "x" << pixelx << "y" << pixely << endl;
+	
 	for ( int i = 0; i < 3; i++) {
 		//the one before
 		
@@ -33,11 +33,11 @@ void fill_window(int** window,int pixelx,int pixely,Mat image,int channel){
 				window[i][j] = temp;
 				
 			}
-			//cout << "Ux" << used_x << "Uy" << used_y <<" " <<window[i][j] << " ";
+			
 		}
-		//cout << endl;
+		
 	}
-	//cout << endl;
+	
 }
 
 //dot product of 2 arrays of width*height
@@ -51,38 +51,88 @@ int dot_product(int** window,int kernel[3][3]){
 	return result;
 }
 
-Mat sobel_filter(Mat image){
-	int kernel1[3][3] = { {-1,0,1}
-						,{-2,0,2} 
-						,{-1,0,1} };
-	int kernel2[3][3] = { {1,2,1}
-						,{0,0,0}
-						,{-1,-2,-1} };
+Mat sobel_filter_color(Mat image){
+	int kernel1[3][3] = { {-1,0,1}						,{-2,0,2} 						,{-1,0,1} };
+	int kernel2[3][3] = { {1,2,1}						,{0,0,0}						,{-1,-2,-1} };
+	vector<Mat> bgr_channels;
+	split(image, bgr_channels);
+
 	int img_width = image.cols;
 	int img_height = image.rows;
 
 	int** window = new int* [3];
-	Mat result1 = image.clone(),result2 = image.clone(),result;
-	
+	Mat result1b = bgr_channels[0].clone(), result2b = bgr_channels[0].clone(), resultb;
+	Mat result1g = bgr_channels[1].clone(), result2g = bgr_channels[1].clone(), resultg;
+	Mat result1r = bgr_channels[2].clone(), result2r = bgr_channels[2].clone(), resultr;
+
 	for (int i = 0; i < 3; i++)
 		window[i] = new int[3];
-	vector<Mat> bgr_channels;
-	split(image, bgr_channels);
-
-
-	//apply sobel filter  3*3 matrix multiplication
+	
 	for (int imagex = 0; imagex < img_width; imagex++) {
 		
         for (int imagey = 0; imagey < img_height ; imagey++) {
-			//cout<<"loop top: row" << imagey <<"  colomn" <<imagex << endl;
-			fill_window(window, imagex, imagey, image,0);
-			result1.at<uchar>(imagey,imagex) = dot_product(window, kernel1);
-			
-			fill_window(window, imagex, imagey, image, 0);
-			result2.at<uchar>(imagey, imagex) = dot_product(window, kernel2);
-			}
+			fill_window(window, imagex, imagey, bgr_channels[0]);
+			result1b.at<uchar>(imagey,imagex) = dot_product(window, kernel1);
+			result2b.at<uchar>(imagey, imagex) = dot_product(window, kernel2);
+
+			fill_window(window, imagex, imagey, bgr_channels[1]);
+			result1g.at<uchar>(imagey, imagex) = dot_product(window, kernel1);
+			result2g.at<uchar>(imagey, imagex) = dot_product(window, kernel2);
+
+			fill_window(window, imagex, imagey, bgr_channels[2]);
+			result1r.at<uchar>(imagey, imagex) = dot_product(window, kernel1);
+			result2r.at<uchar>(imagey, imagex) = dot_product(window, kernel2);
+		}
     }
-	add(result1, result2, result);
+	add(result1r, result2r, resultr);	
+	add(result1g, result2r, resultg);
+	add(result1r, result2r, resultb);
+	vector < Mat > channels = {resultb, resultg, resultr};
+	Mat result;
+	merge(channels, result);
+	delete [] window;
+	return result;
+}
+
+Mat sobel_filter(Mat image){
+	int kernel1[3][3] = { {-1,0,1}						,{-2,0,2} 						,{-1,0,1} };
+	int kernel2[3][3] = { {1,2,1}						,{0,0,0}						,{-1,-2,-1} };
+	vector<Mat> bgr_channels;
+	split(image, bgr_channels);
+
+	int img_width = image.cols;
+	int img_height = image.rows;
+
+	int** window = new int* [3];
+	Mat result1b = bgr_channels[0].clone(), result2b = bgr_channels[0].clone(), resultb;
+	Mat result1g = bgr_channels[1].clone(), result2g = bgr_channels[1].clone(), resultg;
+	Mat result1r = bgr_channels[2].clone(), result2r = bgr_channels[2].clone(), resultr;
+
+	for (int i = 0; i < 3; i++)
+		window[i] = new int[3];
+	
+	for (int imagex = 0; imagex < img_width; imagex++) {
+		
+        for (int imagey = 0; imagey < img_height ; imagey++) {
+			fill_window(window, imagex, imagey, bgr_channels[0]);
+			result1b.at<uchar>(imagey,imagex) = dot_product(window, kernel1);
+			result2b.at<uchar>(imagey, imagex) = dot_product(window, kernel2);
+
+			fill_window(window, imagex, imagey, bgr_channels[1]);
+			result1g.at<uchar>(imagey, imagex) = dot_product(window, kernel1);
+			result2g.at<uchar>(imagey, imagex) = dot_product(window, kernel2);
+
+			fill_window(window, imagex, imagey, bgr_channels[2]);
+			result1r.at<uchar>(imagey, imagex) = dot_product(window, kernel1);
+			result2r.at<uchar>(imagey, imagex) = dot_product(window, kernel2);
+		}
+    }
+	add(result1r, result2r, resultr);	
+	add(result1g, result2r, resultg);
+	add(result1r, result2r, resultb);
+	vector < Mat > channels = {resultb, resultg, resultr};
+	Mat result;
+	merge(channels, result);
 	delete [] window;
 	return result;
 }
@@ -90,31 +140,24 @@ Mat sobel_filter(Mat image){
 Mat orange_filter(int img_width,int img_height, Mat image){
 	 
 	Mat result;
-
-	
-	int r=0, g=0, b=0;
-	//fill rgb values 
-     for (int x = 0; x<img_width;x++){
+	for (int x = 0; x<img_width;x++){
         for(int y =0 ;y<img_height;y++)
         {	// orange has a range of 255, >50 , _
-			Vec3f intensity = image.at<Vec3f>(y, x);
+			Vec3b intensity = image.at<Vec3b>(y, x);
 			float blue = intensity.val[0];
 			float green = intensity.val[1];
 			float red = intensity.val[2];
-
-			if (red == 255, green >= 50)
+			
+			if (red == 255 && green >= 50)
 			{
-				red = 0, green = 0, blue = 0;
-				
+				intensity.val[0]=0;
+				intensity.val[1]=0;
+				intensity.val[2]=0;
 				//move those to the mat result 
-				result.at<Vec3f>(y, x)[0] = blue;
-				result.at<Vec3f>(y, x)[1] = green;
-				result.at<Vec3f>(y, x)[2] = red;
+				result.at<Vec3b>(y, x) = intensity;
 			}
-            
         }
     } 
-	 //memcpy(result.data, imagecopy, img_width * img_height * sizeof(int));
 	 return result;
 }
 
@@ -122,7 +165,7 @@ int main (){
 
   int choice_fltr,choice_img,int_width,int_height;
   Mat image;
-  string image_names[] = { "image-2","test","test2" };
+  string image_names[] = { "image-2","test","test2" , "test3" };
   string default_path = "D:\\Redirected Profile\\Documents\\projects\\git\\IPvisualstudio\\";
   cout<<"pick an operation:1 sobel filter, 2 orange color filter";
   cin>>choice_fltr;
@@ -131,7 +174,6 @@ int main (){
    
   //load image 
   image = imread(default_path+image_names[choice_img]+".png");
-  
   
   Mat result;
 
@@ -143,8 +185,10 @@ int main (){
 	  result = sobel_filter(image);
   }
 
-  else if (choice_fltr==2){ 
-	  image = imread(default_path + image_names[choice_img] + ".png", IMREAD_GRAYSCALE); 
+  else if (choice_fltr == 2){
+	  result = sobel_filter_color(image);
+  }
+  else if (choice_fltr==3){ 
 	  result = orange_filter(int_width, int_height, image);
   }
       
